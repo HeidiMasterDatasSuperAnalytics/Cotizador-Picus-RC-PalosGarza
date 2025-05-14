@@ -42,13 +42,11 @@ st.title("🚛 Captura de Rutas Cortas - PICUS")
 # Configurar Datos Generales
 with st.expander("⚙️ Configurar Datos Generales"):
     col1, col2 = st.columns(2)
-
     with col1:
         valores["Sueldo por Viaje"] = st.number_input("Sueldo por Viaje", value=float(valores.get("Sueldo por Viaje", 300)), step=0.1)
         valores["Bono ISR IMSS por Viaje"] = st.number_input("Bono ISR IMSS por Viaje", value=float(valores.get("Bono ISR IMSS por Viaje", 185.06)), step=0.1)
         valores["Bono Rendimiento"] = st.number_input("Bono Rendimiento", value=float(valores.get("Bono Rendimiento", 0.0)), step=0.1)
         valores["Rendimiento Camion"] = st.number_input("Rendimiento Camion", value=float(valores.get("Rendimiento Camion", 2.5)), step=0.1)
-
     with col2:
         valores["Costo Diesel"] = st.number_input("Costo Diesel", value=float(valores.get("Costo Diesel", 24.0)), step=0.1)
         valores["Tipo de cambio USD"] = st.number_input("Tipo de cambio USD", value=float(valores.get("Tipo de cambio USD", 17.5)), step=0.1)
@@ -64,6 +62,9 @@ else:
     df_rutas = pd.DataFrame()
 
 st.subheader("📥 Nueva Ruta Corta")
+
+if "mostrar_guardar" not in st.session_state:
+    st.session_state.mostrar_guardar = False
 
 with st.form("captura_ruta_corta"):
     col1, col2 = st.columns(2)
@@ -101,51 +102,49 @@ with st.form("captura_ruta_corta"):
         guias = st.number_input("Guías", min_value=0.0)
         estancia = st.number_input("Estancia", min_value=0.0)
 
-if "mostrar_guardar" not in st.session_state:
-    st.session_state.mostrar_guardar = False
+    revisar = st.form_submit_button("🔍 Revisar Ruta")
+    if revisar:
+        tipo_cambio_flete = valores["Tipo de cambio USD"] if moneda_ingreso == "USD" else valores["Tipo de cambio MXN"]
+        tipo_cambio_cruce = valores["Tipo de cambio USD"] if moneda_cruce == "USD" else valores["Tipo de cambio MXN"]
+        tipo_cambio_costo_cruce = valores["Tipo de cambio USD"] if moneda_costo_cruce == "USD" else valores["Tipo de cambio MXN"]
 
-if st.form_submit_button("🔍 Revisar Ruta"):
-    # Lógica de cálculo (idéntica a la que ya tienes)
-    tipo_cambio_flete = valores["Tipo de cambio USD"] if moneda_ingreso == "USD" else valores["Tipo de cambio MXN"]
-    tipo_cambio_cruce = valores["Tipo de cambio USD"] if moneda_cruce == "USD" else valores["Tipo de cambio MXN"]
-    tipo_cambio_costo_cruce = valores["Tipo de cambio USD"] if moneda_costo_cruce == "USD" else valores["Tipo de cambio MXN"]
+        ingreso_flete_convertido = ingreso_flete * tipo_cambio_flete
+        ingreso_cruce_convertido = ingreso_cruce * tipo_cambio_cruce
+        costo_cruce_convertido = costo_cruce * tipo_cambio_costo_cruce
+        ingreso_total = ingreso_flete_convertido + ingreso_cruce_convertido
 
-    ingreso_flete_convertido = ingreso_flete * tipo_cambio_flete
-    ingreso_cruce_convertido = ingreso_cruce * tipo_cambio_cruce
-    costo_cruce_convertido = costo_cruce * tipo_cambio_costo_cruce
-    ingreso_total = ingreso_flete_convertido + ingreso_cruce_convertido
+        costo_diesel_camion = (km / valores["Rendimiento Camion"]) * valores["Costo Diesel"]
+        extras = sum(map(safe_number, [
+            movimiento_local, puntualidad, pension, estancia,
+            pistas_extra, stop, falso, gatas, accesorios, guias
+        ]))
 
-    costo_diesel_camion = (km / valores["Rendimiento Camion"]) * valores["Costo Diesel"]
-    extras = sum(map(safe_number, [
-        movimiento_local, puntualidad, pension, estancia,
-        pistas_extra, stop, falso, gatas, accesorios, guias
-    ]))
+        costo_total = costo_diesel_camion + SUELDO_POR_VIAJE + BONO_ISR_POR_VIAJE + BONO_RENDIMIENTO + casetas + extras + costo_cruce_convertido
 
-    costo_total = costo_diesel_camion + SUELDO_POR_VIAJE + BONO_ISR_POR_VIAJE + BONO_RENDIMIENTO + casetas + extras + costo_cruce_convertido
+        st.success("✅ Revisión exitosa. Verifica y guarda si todo es correcto.")
 
-    # Mostrar resumen
-    st.success("✅ Revisión exitosa. Verifica y guarda si todo es correcto.")
-    st.session_state.ruta_previa = {
-        \"Fecha\": fecha, \"Tipo\": tipo, \"Cliente\": cliente, \"Origen\": origen, \"Destino\": destino,
-        \"KM\": km, \"Moneda\": moneda_ingreso, \"Ingreso_Original\": ingreso_flete,
-        \"Tipo de cambio\": tipo_cambio_flete, \"Ingreso Flete\": ingreso_flete_convertido,
-        \"Moneda_Cruce\": moneda_cruce, \"Cruce_Original\": ingreso_cruce,
-        \"Tipo cambio Cruce\": tipo_cambio_cruce, \"Ingreso Cruce\": ingreso_cruce_convertido,
-        \"Moneda Costo Cruce\": moneda_costo_cruce, \"Costo Cruce\": costo_cruce,
-        \"Costo Cruce Convertido\": costo_cruce_convertido, \"Ingreso Total\": ingreso_total,
-        \"Sueldo_Operador\": SUELDO_POR_VIAJE, \"Bono\": BONO_ISR_POR_VIAJE,
-        \"Bono Rendimiento\": BONO_RENDIMIENTO, \"Casetas\": casetas,
-        \"Movimiento_Local\": movimiento_local, \"Puntualidad\": puntualidad, \"Pension\": pension,
-        \"Estancia\": estancia, \"Pistas Extra\": pistas_extra, \"Stop\": stop, \"Falso\": falso,
-        \"Gatas\": gatas, \"Accesorios\": accesorios, \"Guías\": guias,
-        \"Costo_Diesel_Camion\": costo_diesel_camion, \"Costo_Extras\": extras,
-        \"Costo_Total_Ruta\": costo_total, \"Clasificacion Ruta\": \"RC\"\n    }\n    st.session_state.mostrar_guardar = True
+        st.session_state.ruta_previa = {
+            "Fecha": fecha, "Tipo": tipo, "Cliente": cliente, "Origen": origen, "Destino": destino,
+            "KM": km, "Moneda": moneda_ingreso, "Ingreso_Original": ingreso_flete,
+            "Tipo de cambio": tipo_cambio_flete, "Ingreso Flete": ingreso_flete_convertido,
+            "Moneda_Cruce": moneda_cruce, "Cruce_Original": ingreso_cruce,
+            "Tipo cambio Cruce": tipo_cambio_cruce, "Ingreso Cruce": ingreso_cruce_convertido,
+            "Moneda Costo Cruce": moneda_costo_cruce, "Costo Cruce": costo_cruce,
+            "Costo Cruce Convertido": costo_cruce_convertido, "Ingreso Total": ingreso_total,
+            "Sueldo_Operador": SUELDO_POR_VIAJE, "Bono": BONO_ISR_POR_VIAJE,
+            "Bono Rendimiento": BONO_RENDIMIENTO, "Casetas": casetas,
+            "Movimiento_Local": movimiento_local, "Puntualidad": puntualidad, "Pension": pension,
+            "Estancia": estancia, "Pistas Extra": pistas_extra, "Stop": stop, "Falso": falso,
+            "Gatas": gatas, "Accesorios": accesorios, "Guías": guias,
+            "Costo_Diesel_Camion": costo_diesel_camion, "Costo_Extras": extras,
+            "Costo_Total_Ruta": costo_total, "Clasificacion Ruta": "RC"
+        }
+        st.session_state.mostrar_guardar = True
 
-# Mostrar botón guardar si ya se revisó
-if st.session_state.get(\"mostrar_guardar\") and \"ruta_previa\" in st.session_state:
-    if st.button(\"✅ Guardar Ruta\" ):
+if st.session_state.get("mostrar_guardar") and "ruta_previa" in st.session_state:
+    if st.button("✅ Guardar Ruta"):
         df_rutas = pd.concat([df_rutas, pd.DataFrame([st.session_state.ruta_previa])], ignore_index=True)
         df_rutas.to_csv(RUTA_RUTAS, index=False)
-        st.success(\"🚛 Ruta guardada exitosamente.\")
+        st.success("🚛 Ruta guardada exitosamente.")
         st.session_state.mostrar_guardar = False
         st.rerun()
