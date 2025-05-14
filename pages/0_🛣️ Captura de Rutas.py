@@ -28,9 +28,21 @@ def cargar_datos_generales():
         "Tipo de cambio MXN": 1.0
     }
 
+def guardar_datos_generales(valores):
+    df = pd.DataFrame(valores.items(), columns=["Parametro", "Valor"])
+    df.to_csv(RUTA_DATOS, index=False)
+
 valores = cargar_datos_generales()
 
 st.title("🚛 Captura de Rutas Cortas - PICUS")
+
+# Configurar Datos Generales
+with st.expander("⚙️ Configurar Datos Generales"):
+    for key in ["Rendimiento Camion", "Costo Diesel", "Tipo de cambio USD", "Tipo de cambio MXN"]:
+        valores[key] = st.number_input(key, value=float(valores.get(key, 0)), step=0.1)
+    if st.button("Guardar Datos Generales"):
+        guardar_datos_generales(valores)
+        st.success("✅ Datos Generales guardados correctamente.")
 
 if os.path.exists(RUTA_RUTAS):
     df_rutas = pd.read_csv(RUTA_RUTAS)
