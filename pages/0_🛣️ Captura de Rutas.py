@@ -7,11 +7,6 @@ from datetime import datetime
 RUTA_RUTAS = "rutas_guardadas.csv"
 RUTA_DATOS = "datos_generales.csv"
 
-# Valores por defecto específicos para PICUS RC
-SUELDO_POR_VIAJE = 1500 / 5  # $300 por viaje
-BONO_ISR_POR_VIAJE = 925.32 / 5  # $185.064 por viaje
-BONO_RENDIMIENTO = 0.0  # Dejar en 0 por ahora
-
 # ============================
 # Funciones auxiliares
 # ============================
@@ -22,6 +17,9 @@ def cargar_datos_generales():
     if os.path.exists(RUTA_DATOS):
         return pd.read_csv(RUTA_DATOS).set_index("Parametro").to_dict()["Valor"]
     return {
+        "Sueldo por Viaje": 300.0,
+        "Bono ISR IMSS por Viaje": 185.06,
+        "Bono Rendimiento": 0.0,
         "Rendimiento Camion": 2.5,
         "Costo Diesel": 24.0,
         "Tipo de cambio USD": 17.5,
@@ -34,11 +32,19 @@ def guardar_datos_generales(valores):
 
 valores = cargar_datos_generales()
 
+# Cargar valores dinámicos desde datos generales
+SUELDO_POR_VIAJE = float(valores.get("Sueldo por Viaje", 300))
+BONO_ISR_POR_VIAJE = float(valores.get("Bono ISR IMSS por Viaje", 185.06))
+BONO_RENDIMIENTO = float(valores.get("Bono Rendimiento", 0))
+
 st.title("🚛 Captura de Rutas Cortas - PICUS")
 
 # Configurar Datos Generales
 with st.expander("⚙️ Configurar Datos Generales"):
-    for key in ["Rendimiento Camion", "Costo Diesel", "Tipo de cambio USD", "Tipo de cambio MXN"]:
+    for key in [
+        "Sueldo por Viaje", "Bono ISR IMSS por Viaje", "Bono Rendimiento",
+        "Rendimiento Camion", "Costo Diesel", "Tipo de cambio USD", "Tipo de cambio MXN"
+    ]:
         valores[key] = st.number_input(key, value=float(valores.get(key, 0)), step=0.1)
     if st.button("Guardar Datos Generales"):
         guardar_datos_generales(valores)
