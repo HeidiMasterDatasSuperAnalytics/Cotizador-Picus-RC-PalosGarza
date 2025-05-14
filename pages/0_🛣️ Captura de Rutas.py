@@ -17,16 +17,13 @@ def cargar_datos_generales():
     if os.path.exists(RUTA_DATOS):
         return pd.read_csv(RUTA_DATOS).set_index("Parametro").to_dict()["Valor"]
     return {
-        col1, col2 = st.columns(2)
-        with col1:
-            "Sueldo por Viaje": 300.0,
-            "Bono ISR IMSS por Viaje": 185.06,
-            "Bono Rendimiento": 0.0,
-            "Rendimiento Camion": 2.5,
-        with col2:    
-            "Costo Diesel": 24.0,
-            "Tipo de cambio USD": 17.5,
-            "Tipo de cambio MXN": 1.0
+        "Sueldo por Viaje": 300.0,
+        "Bono ISR IMSS por Viaje": 185.06,
+        "Bono Rendimiento": 0.0,
+        "Rendimiento Camion": 2.5,
+        "Costo Diesel": 24.0,
+        "Tipo de cambio USD": 17.5,
+        "Tipo de cambio MXN": 1.0
     }
 
 def guardar_datos_generales(valores):
@@ -44,11 +41,19 @@ st.title("🚛 Captura de Rutas Cortas - PICUS")
 
 # Configurar Datos Generales
 with st.expander("⚙️ Configurar Datos Generales"):
-    for key in [
-        "Sueldo por Viaje", "Bono ISR IMSS por Viaje", "Bono Rendimiento",
-        "Rendimiento Camion", "Costo Diesel", "Tipo de cambio USD", "Tipo de cambio MXN"
-    ]:
-        valores[key] = st.number_input(key, value=float(valores.get(key, 0)), step=0.1)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        valores["Sueldo por Viaje"] = st.number_input("Sueldo por Viaje", value=float(valores.get("Sueldo por Viaje", 300)), step=0.1)
+        valores["Bono ISR IMSS por Viaje"] = st.number_input("Bono ISR IMSS por Viaje", value=float(valores.get("Bono ISR IMSS por Viaje", 185.06)), step=0.1)
+        valores["Bono Rendimiento"] = st.number_input("Bono Rendimiento", value=float(valores.get("Bono Rendimiento", 0.0)), step=0.1)
+        valores["Rendimiento Camion"] = st.number_input("Rendimiento Camion", value=float(valores.get("Rendimiento Camion", 2.5)), step=0.1)
+
+    with col2:
+        valores["Costo Diesel"] = st.number_input("Costo Diesel", value=float(valores.get("Costo Diesel", 24.0)), step=0.1)
+        valores["Tipo de cambio USD"] = st.number_input("Tipo de cambio USD", value=float(valores.get("Tipo de cambio USD", 17.5)), step=0.1)
+        valores["Tipo de cambio MXN"] = st.number_input("Tipo de cambio MXN", value=float(valores.get("Tipo de cambio MXN", 1.0)), step=0.1)
+
     if st.button("Guardar Datos Generales"):
         guardar_datos_generales(valores)
         st.success("✅ Datos Generales guardados correctamente.")
