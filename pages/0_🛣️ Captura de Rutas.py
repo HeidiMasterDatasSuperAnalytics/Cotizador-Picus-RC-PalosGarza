@@ -17,13 +17,16 @@ def cargar_datos_generales():
     if os.path.exists(RUTA_DATOS):
         return pd.read_csv(RUTA_DATOS).set_index("Parametro").to_dict()["Valor"]
     return {
-        "Sueldo por Viaje": 300.0,
-        "Bono ISR IMSS por Viaje": 185.06,
-        "Bono Rendimiento": 0.0,
-        "Rendimiento Camion": 2.5,
-        "Costo Diesel": 24.0,
-        "Tipo de cambio USD": 17.5,
-        "Tipo de cambio MXN": 1.0
+        col1, col2 = st.columns(2)
+        with col1:
+            "Sueldo por Viaje": 300.0,
+            "Bono ISR IMSS por Viaje": 185.06,
+            "Bono Rendimiento": 0.0,
+            "Rendimiento Camion": 2.5,
+        with col2:    
+            "Costo Diesel": 24.0,
+            "Tipo de cambio USD": 17.5,
+            "Tipo de cambio MXN": 1.0
     }
 
 def guardar_datos_generales(valores):
