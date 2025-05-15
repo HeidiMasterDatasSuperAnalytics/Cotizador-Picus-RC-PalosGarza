@@ -108,13 +108,12 @@ if os.path.exists(RUTA_PROG):
                     pension = st.number_input("Pensión", min_value=0.0, value=safe(tramo_ida.get("Pension", 0)))
                     estancia = st.number_input("Estancia", min_value=0.0, value=safe(tramo_ida.get("Estancia", 0)))
                     pistas_extra = st.number_input("Pistas Extra", min_value=0.0, value=safe(tramo_ida.get("Pistas Extra", 0)))
-                with col2:}
+                with col2:
                     stop = st.number_input("Stop", min_value=0.0, value=safe(tramo_ida.get("Stop", 0)))
                     falso = st.number_input("Falso", min_value=0.0, value=safe(tramo_ida.get("Falso", 0)))
                     gatas = st.number_input("Gatas", min_value=0.0, value=safe(tramo_ida.get("Gatas", 0)))
                     accesorios = st.number_input("Accesorios", min_value=0.0, value=safe(tramo_ida.get("Accesorios", 0)))
                     guias = st.number_input("Guías", min_value=0.0, value=safe(tramo_ida.get("Guías", 0)))
-
                 actualizar = st.form_submit_button("💾 Guardar cambios")
                 if actualizar:
                     columnas = {
